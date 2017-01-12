@@ -3,7 +3,7 @@
 // #include <dlfcn.h>
 #include <cstdlib>
 #include <vector>
-#include <alloca.h>
+//#include <alloca.h>
 #include <string>
 #include <cstring>
 #include <R.h>
