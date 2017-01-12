@@ -5,13 +5,12 @@
 #include <vector>
 #include <cmath>
 #include <inttypes.h>
-#include <stdint.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 
 
-
+typedef unsignded long long __int64_t;
 
 using namespace std;
 namespace MARGIN
