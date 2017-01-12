@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <inttypes.h>
 
 
 typedef long long __int64_t;
