@@ -8,10 +8,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <inttypes.h>
 
-
-typedef long long __int64_t;
+// #include <inttypes.h>
+// typedef long long __int64_t;
 
 using namespace std;
 namespace MARGIN
@@ -173,10 +172,10 @@ namespace MARGIN
 		vector<Instrument*> Elements;
 		
 	public:
-		 Portfolio(){OptionPrice = 0; NetOptionValue =0;NetOrderOptionValue = 0;NetIntraDayOptionValue=0;};
-		 void AddInstrument(Instrument* item);
-		 vector<Instrument*> GetInstruments(){return Elements;};
-		 vector<CCLink*> GetCCs(){return CC;};
+		SPANNATIVEDLL_API Portfolio(){OptionPrice = 0; NetOptionValue =0;NetOrderOptionValue = 0;NetIntraDayOptionValue=0;};
+		SPANNATIVEDLL_API void AddInstrument(Instrument* item);
+		SPANNATIVEDLL_API vector<Instrument*> GetInstruments(){return Elements;};
+		SPANNATIVEDLL_API vector<CCLink*> GetCCs(){return CC;};
 		void printportfolio();
 		CCLink* FindCC(string name)
 		{
@@ -189,12 +188,12 @@ namespace MARGIN
 			}
 			return NULL;		
 		};
-		 void Clear();
+		SPANNATIVEDLL_API void Clear();
 		double OptionPrice;
 		double NetOptionValue;
 		double NetOrderOptionValue;
 		double NetIntraDayOptionValue;
-		 ~Portfolio(){
+		SPANNATIVEDLL_API ~Portfolio(){
 			Clear();
 			for(size_t i = 0; i < CC.size(); i++)
 			{
@@ -220,30 +219,30 @@ namespace MARGIN
 		bool _IsRealTime;
 		
 	public:
-		 MarginCalculator(){_IsRealTime = false;};
-		 MarginCalculator(string XMLFileName);
-		 int Calculate(Portfolio* portfolio, Margin &Result, bool IncludeDMC = false);
-		 int CalculateDetailed(Portfolio* portfolio, DetailedMargin &Result);
-		 int GetPriceScan(Instrument* instrument, double& PriceScan);
-		 int GetDelta(Instrument* instrument, double& Delta);
-		 int SetErrorPath(char* ErrorPath);
-		 void SetRealTime(bool IsRealTime = true){_IsRealTime = IsRealTime;}
+		SPANNATIVEDLL_API MarginCalculator(){_IsRealTime = false;};
+		SPANNATIVEDLL_API MarginCalculator(string XMLFileName);
+		SPANNATIVEDLL_API int Calculate(Portfolio* portfolio, Margin &Result, bool IncludeDMC = false);
+		SPANNATIVEDLL_API int CalculateDetailed(Portfolio* portfolio, DetailedMargin &Result);
+		SPANNATIVEDLL_API int GetPriceScan(Instrument* instrument, double& PriceScan);
+		SPANNATIVEDLL_API int GetDelta(Instrument* instrument, double& Delta);
+		SPANNATIVEDLL_API int SetErrorPath(char* ErrorPath);
+		SPANNATIVEDLL_API void SetRealTime(bool IsRealTime = true){_IsRealTime = IsRealTime;}
 
 
 
-		 int SetOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double Values[17]);
-		 int SetFuturesScenarioValues(string Symbol, string Maturity, double Values[17]);
+		SPANNATIVEDLL_API int SetOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double Values[17]);
+		SPANNATIVEDLL_API int SetFuturesScenarioValues(string Symbol, string Maturity, double Values[17]);
 
-		 int ReCalculateOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double UnderlyingPrice, double Price, double Volatility, double RiskFreeRate);
-		 int ResetOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike);
+		SPANNATIVEDLL_API int ReCalculateOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double UnderlyingPrice, double Price, double Volatility, double RiskFreeRate);
+		SPANNATIVEDLL_API int ResetOptionScenarioValues(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike);
 
-		 int ReCalculateFutureScenarioValues(string Symbol, string Maturity, double Price);
+		SPANNATIVEDLL_API int ReCalculateFutureScenarioValues(string Symbol, string Maturity, double Price);
 
-		 int SetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double Delta);
-		 int ResetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike);
+		SPANNATIVEDLL_API int SetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double Delta);
+		SPANNATIVEDLL_API int ResetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike);
 
 
-		 ~MarginCalculator();
+		SPANNATIVEDLL_API ~MarginCalculator();
 	private:
 		int CalculateScenario(Portfolio* portfolio ,Margin &Result);
 		int CalculateCCScenario(CCLink* CC, Margin &Result);
@@ -305,9 +304,9 @@ namespace MARGIN
 		bool _IncludeDMC;
 		bool _withGrouping;
 	public:
-		 MarginEstimator(MarginCalculator* Calculator, Portfolio* portfolio, bool withGrouping = false);
-		 int Calculate(ESTIMATION EstimationType, Margin &Result, bool IncludeDMC = false);
-		 ~MarginEstimator();
+		SPANNATIVEDLL_API MarginEstimator(MarginCalculator* Calculator, Portfolio* portfolio, bool withGrouping = false);
+		SPANNATIVEDLL_API int Calculate(ESTIMATION EstimationType, Margin &Result, bool IncludeDMC = false);
+		SPANNATIVEDLL_API ~MarginEstimator();
 	private:
 		double CalculateBrute(Margin& ResultMargin);
 		double CalculatewithIteration(Margin& ResultMargin);
