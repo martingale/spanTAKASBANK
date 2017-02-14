@@ -5,6 +5,33 @@
 using namespace MARGIN;
 using namespace std;
 
+//Physical::Physical(string Symbol, int ID)
+//	:_ID(ID), _Symbol(Symbol)
+//{
+// 
+//}
+
+//Option::Option(string Symbol, int ID, int UnderlyingID, ExerciseType EType, string Maturity, double Strike, bool IsCall )
+//	:_Symbol(Symbol),_ID(ID),_Strike(Strike),_IsCall(IsCall),_EType(EType)
+//{
+//
+//}
+
+//Futures::Futures(string Symbol, int ID, int UnderlyingID, string Maturity, double Strike, bool IsCall)
+//	:_Symbol(Symbol),_ID(ID),_Strike(Strike),_IsCall(IsCall)
+//{
+//
+//}
+
+//Underlying* FindUnderlying(int ID, map<int, Underlying*>& Underlyings)
+//{
+//	map<int, Underlying*>::iterator it;
+//	it = Underlyings.find(ID);
+//	if (it != Underlyings.end())
+//		return it->second;
+//	return NULL;
+//}
+
 double ScenarioMultipliers[16][2] =
 {
 	{ 0,        1},
@@ -55,93 +82,6 @@ void Futures::UpdateValues(double newPrice, vector<ScenarioPoint*> Scenarios)
 	{
 		raRT[i] = ((newPrice + Scenarios[i]->PriceMultiplier*(PriceScan/cvf) - newPrice)*Scenarios[i]->Weight)*(-1);
 	}
-}
-
-double getConversionFactor(string fromCur, string toCur, vector<CurrencyConversion*> currencyConversions)
-{
-	//bool found = false;
-	double factor = 1;
-	for(vector<CurrencyConversion*>::const_iterator it = currencyConversions.begin(); it != currencyConversions.end(); it++)
-	{
-		if((*it)->fromCur == fromCur && (*it)->toCur == toCur)
-		//{found =true;
-			factor = (*it)->factor;//}
-	} 
-	//if(found == false)
-	//	found = true;
-	return factor;
-}
-
-int FillCurrencies(TiXmlDocument* XMLDOC,vector<Currency*>& Currencies)
-{
-	TiXmlHandle hDOC(XMLDOC);
-	TiXmlElement *definitions = hDOC.FirstChild("spanFile").FirstChild( "definitions" ).ToElement();
-
-	TiXmlElement *currencyDef = definitions->FirstChildElement("currencyDef");
-	
-	if (currencyDef == NULL)
-		return 0;		// No Currencies...
-	
-	int i = 0;
-	while (currencyDef != NULL)
-	{
-		i++;
-		TiXmlElement* currency = currencyDef->FirstChildElement("currency");
-		TiXmlNode* node = currency->FirstChild();
-		string strCurrency = node->Value(); 
-		TiXmlElement* symbol = currencyDef->FirstChildElement("symbol");
-		node = symbol->FirstChild();
-		string Symbol = node->Value(); 
-		TiXmlElement* decimalPos = currencyDef->FirstChildElement("decimalPos");
-		node = decimalPos->FirstChild();
-		int DecimalPos = atoi(node->Value()); 
-	//	cout << "Id: " << ID << ", Code: " << Code << ", Name: " << Name << endl;
-		Currency* curr = new Currency();
-		curr->currency = strCurrency;
-		curr->symbol = Symbol;
-		curr->decimalPos = DecimalPos;
-		Currencies.push_back(curr);
-
-		currencyDef = currencyDef->NextSiblingElement("currencyDef");
-
-	}
-	
-	return i;
-}
-
-int FillCurrencyConversions(TiXmlDocument* XMLDOC,vector<CurrencyConversion*>& CurrencyConversions)
-{
-	TiXmlHandle hDOC(XMLDOC);
-	TiXmlElement *curConv = hDOC.FirstChild("spanFile").FirstChild( "pointInTime" ).FirstChild( "clearingOrg" ).FirstChild("curConv").ToElement();
-
-	if (curConv == NULL)
-		return 0;		// No Currencies Conversions...
-	
-	int i = 0;
-	while (curConv != NULL)
-	{
-		i++;
-		TiXmlElement* fromCur = curConv->FirstChildElement("fromCur");
-		TiXmlNode* node = fromCur->FirstChild();
-		string strfromCur = node->Value(); 
-		TiXmlElement* toCur = curConv->FirstChildElement("toCur");
-		node = toCur->FirstChild();
-		string strtoCur = node->Value(); 
-		TiXmlElement* factor = curConv->FirstChildElement("factor");
-		node = factor->FirstChild();
-		int Factor = atoi(node->Value()); 
-	//	cout << "Id: " << ID << ", Code: " << Code << ", Name: " << Name << endl;
-		CurrencyConversion* currConv = new CurrencyConversion();
-		currConv->fromCur = strfromCur;
-		currConv->toCur = strtoCur;
-		currConv->factor = Factor;
-		CurrencyConversions.push_back(currConv);
-
-		curConv = curConv->NextSiblingElement("curConv");
-
-	}
-	
-	return i;
 }
 
 int FillScanPairs(TiXmlDocument* XMLDOC, vector<pair<int,int>>& ScanPointPairs, vector<ScenarioPoint*>& Scenarios)
@@ -221,7 +161,8 @@ int FillPhysicals(TiXmlDocument* XMLDOC,vector<Physical*>& Physicals)
 	return i;
 }
 
-int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& OptionContracts, vector<CurrencyConversion*> currencyConversions)
+
+int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& OptionContracts)
 {
 	TiXmlHandle hDOC(XMLDOC);
 	TiXmlElement *exchange = hDOC.FirstChild("spanFile").FirstChild( "pointInTime" ).FirstChild( "clearingOrg" ).FirstChild( "exchange" ).ToElement();
@@ -246,9 +187,9 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 		node = pfName->FirstChild();
 		string Name = node->Value();
 
-		/*TiXmlElement* pcvf = oopPf->FirstChildElement("cvf");
+		TiXmlElement* pcvf = oopPf->FirstChildElement("cvf");
 		node = pcvf->FirstChild();
-		double cvf = atof(node->Value());*/
+		double cvf = atof(node->Value());
 
 		TiXmlElement* undPfID = oopPf->FirstChild("undPf")->FirstChild("pfId")->ToElement();
 		node = undPfID->FirstChild();
@@ -256,13 +197,6 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 		TiXmlElement* exercise = oopPf->FirstChildElement("exercise");
 		node = exercise->FirstChild();
 		string EXERC = node->Value();
-
-		TiXmlElement* currency = oopPf->FirstChildElement("currency");
-		node = currency->FirstChild();
-		string strcurrency = node->Value();
-		double factor = 1;
-		if(strcurrency != "TRY")
-			factor = getConversionFactor(strcurrency,"TRY",currencyConversions);
 
 		TiXmlElement* series = oopPf->FirstChildElement("series");
 		
@@ -274,32 +208,11 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 			node = pcvf2->FirstChild();
 			double cvfR = atof(node->Value());
 			
-			int r = atoi(series->FirstChildElement("scanRate")->FirstChildElement("r")->FirstChild()->Value());
-			double priceScan = 0;
-			double volScan = 0;
-			//switch(r)
-			//{
-			//case 1:
-			//	{
-			//		priceScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("priceScanPct")->FirstChild()->Value());
-			//		volScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//case 2:
-			//	{
-			//		priceScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("priceScan")->FirstChild()->Value());
-			//		volScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//case 3:
-			//	{
-			//		priceScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("priceScanPct")->FirstChild()->Value());
-			//		volScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//}
-				
-				
+			
+			double priceScan = atof(series->FirstChildElement("scanRate")->FirstChildElement("priceScan")->FirstChild()->Value());
+			double volScanPct = atof(series->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
+
+			
 			TiXmlElement* opt = series->FirstChildElement("opt");
 			while (opt != NULL)
 			{
@@ -308,7 +221,6 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 				bool isCall = (C == "C");
 				double Strike = atof(opt->FirstChildElement("k")->FirstChild()->Value());
 				double Price = atof(opt->FirstChildElement("p")->FirstChild()->Value());
-				Price = Price * factor;				// D�V�Z!!!!!!! 03.02.2017
 				TiXmlElement* a = opt->FirstChild("ra")->FirstChild("a")->ToElement();
 				int aIndex = 0;
 				Option* pOop = new Option();
@@ -322,22 +234,19 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 					pOop->EType = EUROPIAN;
 				pOop->ID = ID;
 				pOop->IsCall = isCall;
-				pOop->Maturity = pe.substr(0,6);
-				pOop->MaturityDay = pe;
+				pOop->Maturity = pe;
 				pOop->Name = Name;
 				pOop->Strike = Strike;
 				pOop->UnderlyingID = UnderlyingID;
 				pOop->cvf = cvfR;
 				pOop->Price = Price;
 				pOop->PriceRT = Price;
-				pOop->Currency = strcurrency;
 				pOop->PriceScan = priceScan;
-				pOop->VolScan = volScan;
+				pOop->VolScan = volScanPct;
 				pOop->TimetoMaturity = t;
 				while (a != NULL)
 				{
-					//pOop->ra[aIndex] = atof(a->FirstChild()->Value());				D�V�Z!!!!!!!! 03.02.2017
-					pOop->ra[aIndex] = atof(a->FirstChild()->Value())*factor;
+					pOop->ra[aIndex] = atof(a->FirstChild()->Value());
 					pOop->raRT[aIndex] = pOop->ra[aIndex];
 					aIndex ++;
 					a = a->NextSiblingElement();
@@ -346,9 +255,7 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 				pOop->delta = atof(opt->FirstChild("ra")->FirstChild("d")->ToElement()->FirstChild()->Value());
 				pOop->deltaRT = pOop->delta;
 
-				//OptionContracts.insert(std::make_pair(OptionKey(Code, pe,isCall,pOop->EType,Strike), pOop)); Maturity Day Update!!!!!!
-				OptionContracts.insert(std::make_pair(OptionKey(Code, pOop->Maturity,isCall,pOop->EType,Strike), pOop));
-
+				OptionContracts.insert(std::make_pair(OptionKey(Code, pe,isCall,pOop->EType,Strike), pOop));
 				//OptionContracts.push_back(pOop);
 
 				opt = opt->NextSiblingElement("opt");
@@ -363,15 +270,16 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 	return i;
 }
 
-int FillOptions(TiXmlDocument* XMLDOC,map<OptionKey, Option*>& OptionContracts, vector<CurrencyConversion*> currencyConversions)
+int FillOptions(TiXmlDocument* XMLDOC,map<OptionKey, Option*>& OptionContracts)
 {
-	int Count= 	FillOptionsON("oofPf",XMLDOC,OptionContracts, currencyConversions);
-	Count += FillOptionsON("oopPf",XMLDOC,OptionContracts, currencyConversions);
-	Count += FillOptionsON("oocPf",XMLDOC,OptionContracts, currencyConversions);
+	int Count= 	FillOptionsON("oofPf",XMLDOC,OptionContracts);
+	Count += FillOptionsON("oopPf",XMLDOC,OptionContracts);
+	Count += FillOptionsON("oocPf",XMLDOC,OptionContracts);
 	return Count;
 }
 
-int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& FuturesContracts, vector<CurrencyConversion*> currencyConversions)
+
+int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& FuturesContracts)
 {
 	TiXmlHandle hDOC(XMLDOC);
 	TiXmlElement *exchange = hDOC.FirstChild("spanFile").FirstChild( "pointInTime" ).FirstChild( "clearingOrg" ).FirstChild( "exchange" ).ToElement();
@@ -395,13 +303,6 @@ int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& Future
 		TiXmlElement* pfName = futPf->FirstChildElement("name");
 		node = pfName->FirstChild();
 		string Name = node->Value();
-		
-		TiXmlElement* currency = futPf->FirstChildElement("currency");
-		node = currency->FirstChild();
-		string strcurrency = node->Value();
-		double factor = 1;
-		if(strcurrency != "TRY")
-			factor = getConversionFactor(strcurrency,"TRY",currencyConversions);
 		TiXmlElement* undPfID = futPf->FirstChild("undPf")->FirstChild("pfId")->ToElement();
 		node = undPfID->FirstChild();
 		int UnderlyingID = atoi(node->Value()); 
@@ -413,37 +314,9 @@ int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& Future
 			string pe = fut->FirstChildElement("pe")->FirstChild()->Value();
 			double cvf = atof(fut->FirstChildElement("cvf")->FirstChild()->Value());
 
-		//	double t = atof(fut->FirstChildElement("t")->FirstChild()->Value());		// t yok!!!!!!!!!!!!!!!!! YEN� SPAN!!!!!!!!!!!!!!!!!!!!!!
-			
-			
-			int r = atoi(fut->FirstChildElement("scanRate")->FirstChildElement("r")->FirstChild()->Value());
-			double priceScan = 0;
-			double volScan = 0;
-			//switch(r)
-			//{
-			//case 1:
-			//	{
-			//		priceScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("priceScanPct")->FirstChild()->Value());
-			//		volScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//case 2:
-			//	{
-			//		priceScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("priceScan")->FirstChild()->Value());
-			//		volScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//case 3:
-			//	{
-			//		priceScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("priceScanPct")->FirstChild()->Value());
-			//		volScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("volScanPct")->FirstChild()->Value());
-			//	}
-			//	break;
-			//}
-			
-	/*		double priceScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("priceScanPct")->FirstChild()->Value());
-		
-			double volScanPct = atof(fut->FirstChildElement("scanRate")->FirstChildElement("volScan")->FirstChild()->Value());*/
+			double t = atof(fut->FirstChildElement("t")->FirstChild()->Value());
+			double priceScan = atof(fut->FirstChildElement("scanRate")->FirstChildElement("priceScan")->FirstChild()->Value());
+			double volScanPct = atof(fut->FirstChildElement("scanRate")->FirstChildElement("volScan")->FirstChild()->Value());
 
 
 
@@ -455,28 +328,25 @@ int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& Future
 				int aIndex = 0;
 				Futures* pFut = new Futures();
 				pFut->ID = ID;
-				pFut->Maturity = pe.substr(0,6);
-				pFut->MaturityDay = pe;
+				pFut->Maturity = pe;
 				pFut->Code = Code;
 				pFut->Name = Name;
 				pFut->UnderlyingID = UnderlyingID;
 				pFut->cvf = cvf;
-				//pFut->TimetoMaturity = t;		// t yok!!!!!!!!!!!!!!!!! YEN� SPAN!!!!!!!!!!!!!!!!!!!!!!
+				pFut->TimetoMaturity = t;
 				pFut->PriceScan = priceScan;
-				pFut->VolScan = volScan;
+				pFut->VolScan = volScanPct;
 				while (a != NULL)
 				{
 					
-					//pFut->ra[aIndex] = atof(a->FirstChild()->Value());
-					pFut->ra[aIndex] = atof(a->FirstChild()->Value())*factor;
+					pFut->ra[aIndex] = atof(a->FirstChild()->Value());
 					pFut->raRT[aIndex] = pFut->ra[aIndex];
 					aIndex ++;
 					//cout<< "ra " << pFut->ra[aIndex] << " " << a->FirstChild()->Value() << endl;
 					a = a->NextSiblingElement();
 				}
 				pFut->delta = atof(fut->FirstChild("ra")->FirstChild("d")->ToElement()->FirstChild()->Value());
-				//FuturesContracts.insert(std::make_pair(std::make_pair(Code, pe), pFut)); Maturity Day Update!!!!!!
-				FuturesContracts.insert(std::make_pair(std::make_pair(Code, pFut->Maturity), pFut));
+				FuturesContracts.insert(std::make_pair(std::make_pair(Code, pe), pFut));
 				//FuturesContracts.push_back(pFut);
 			}
 			fut = fut->NextSiblingElement("fut");
@@ -535,10 +405,9 @@ int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<Co
 		TiXmlNode* node = CC->FirstChild();
 		pCC->cc = node->Value(); 
 		TiXmlElement* Name = ccDef->FirstChildElement("name");
-		if (Name!= NULL)
+		node = Name->FirstChild();
+		if (node!= NULL)
 		{
-			node = Name->FirstChild();
-		
 			pCC->name = node->Value(); 
 
 		}
@@ -688,37 +557,17 @@ int FillInterSpreads(TiXmlDocument* XMLDOC,vector<DSpread*>& InterSpreads)
 	return i;
 }
 
+
+
 void XMLParser::PrintOptions()
 {
-	/*ofstream* outputFile1;
-	outputFile1 = new ofstream("Market.txt");*/
-	//srand(time(NULL));
-
-	ofstream* outputFileCSV = new ofstream("Options.csv", fstream::app);
 	for(map<OptionKey, Option*>::iterator iter = OptionContracts.begin();iter != OptionContracts.end();iter++)
 	{
 		pair<OptionKey, Option*> temp = *iter;
 		Option *opt = temp.second;
-		
-		
-		//int Count = rand() % 10 -5;
-		//if(Count == 0)
-		//	Count = 4;
-
-		//int isOrder = rand() %2; 
-		//int isIntra = rand() %2; 
-		////int isCall = rand() %2; 
-		//double OExPrice = opt->Price + rand() %3;
-
-		//*outputFile << "Code: " << opt->Code << " C/P: " << opt->IsCall << " A/E: " << (int)(opt->EType) << " Maturity: " 
-		//	<< opt->Maturity << " Strike: " << opt->Strike << " Premium: " << opt->Price << endl;
-		//*outputFile1 <<  opt->Code << ";" << Count << ";" << isOrder << ";" << isIntra <<";" << -1 <<";" << 1 <<";"<< 0<<";" << opt->IsCall <<";" << opt->Maturity<< ";" << opt->Strike << ";" <<OExPrice <<";" << endl;
-		*outputFileCSV <<  opt->Code << ";" << -1 << ";" << "-1" << ";" << "-1" <<";" << "-1" <<";" << 1 <<";"<< 0<<";" << opt->IsCall <<";" << opt->Maturity<< ";" << opt->Strike << ";" <<"-1" << endl; 
-		//<<  opt->Code << ";" << Count << ";" << isOrder << ";" << isIntra <<";" << -1 <<";" << 1 <<";"<< 0<<";" << opt->IsCall <<";" << opt->Maturity<< ";" << opt->Strike << ";" <<OExPrice <<";" << endl;
-
+		outputFile << "Code: " << opt->Code << " C/P: " << opt->IsCall << " A/E: " << (int)(opt->EType) << " Maturity: "
+			<< opt->Maturity << " Strike: " << opt->Strike << " Premium: " << opt->Price << endl ;
 	}
-	delete outputFileCSV;
-	//delete outputFile1;
 	//int Size = OptionContracts.size();
 	//for (int i = 0; i < Size; i++)
 	//{
@@ -732,19 +581,13 @@ void XMLParser::PrintOptions()
 
 void XMLParser::PrintFutures()
 {
-	ofstream* outputFileCSV = new ofstream("Futures.csv", fstream::app);
-	
 	for(map<pair<string,string>, Futures*>::iterator iter = FuturesContracts.begin();iter != FuturesContracts.end();iter++)
 	{
 		pair<pair<string,string>, Futures*> temp = *iter;
 		Futures *fut = temp.second;
-		//*outputFile << "Code: " << fut->Code << " Maturity: " 
-		//	<< fut->Maturity << endl;
-
-		*outputFileCSV << fut->Code << ";1;0;0;-1;0;0;0;" << fut->Maturity<<";-1;-1" << endl;
-
+		outputFile << "Code: " << fut->Code << " Maturity: "
+			<< fut->Maturity << endl;
 	}
-	delete outputFileCSV;
 	//int Size = FuturesContracts.size();
 	//for (int i = 0; i < Size; i++)
 	//{
@@ -807,12 +650,10 @@ void XMLParser::PrintCombinedCommodities()
 
 int Parse(TiXmlDocument* XMLDOC, XMLParser * Parser)
 {
-	FillCurrencies(XMLDOC, Parser->Currencies);
-	FillCurrencyConversions(XMLDOC, Parser->CurrencyConversions);
 	FillScanPairs(XMLDOC, Parser->ScanPointPairs, Parser->Scenarios);
 	FillPhysicals(XMLDOC, Parser->Physicals);
-	FillOptions(XMLDOC, Parser->OptionContracts, Parser->CurrencyConversions);
-	FillFutures(XMLDOC, Parser->FuturesContracts, Parser->CurrencyConversions);
+	FillOptions(XMLDOC, Parser->OptionContracts);
+	FillFutures(XMLDOC, Parser->FuturesContracts);
 	FillCombinedCommodities(XMLDOC, Parser, Parser->CCs);
 	FillInterSpreads(XMLDOC, Parser->InterSpreads);
 	//Parser->PrintOptions();
@@ -822,9 +663,10 @@ int Parse(TiXmlDocument* XMLDOC, XMLParser * Parser)
 	return 0;
 }
 
+
+
 XMLParser::XMLParser(string FileName)
 {
-	CURRENCY = "TRY";
 	TiXmlDocument* XMLDOC;
 	XMLDOC = NULL;
 	//outputFile = new ofstream("Market.txt");
@@ -929,17 +771,6 @@ XMLParser::~XMLParser()
 	} 
 	Scenarios.clear();
 
-	for(vector<Currency*>::const_iterator it = Currencies.begin(); it != Currencies.end(); it++)
-	{
-		delete *it;
-	} 
-	Currencies.clear();
-
-	for(vector<CurrencyConversion*>::const_iterator it = CurrencyConversions.begin(); it != CurrencyConversions.end(); it++)
-	{
-		delete *it;
-	} 
-	CurrencyConversions.clear();
 }
 
 string XMLParser::GetCC(int ID)
@@ -957,3 +788,7 @@ string XMLParser::GetCC(int ID)
 	}
 	return CC;
 }
+
+
+
+//Tier* FindTier(int tn);

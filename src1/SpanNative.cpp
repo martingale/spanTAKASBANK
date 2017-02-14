@@ -2,12 +2,15 @@
 #include "SpanNative.h"
 //#include "vld.h"
 #include <algorithm>
-
+#include <R.h>
+#include <Rinternals.h>
+#include <Rdefines.h> 
+#include <Rcpp.h>
 
 
 using namespace MARGIN;
 using namespace std;
-//using namespace Rcpp;
+using namespace Rcpp;
 
 
 #pragma region FUNCTIONS
@@ -81,7 +84,6 @@ void Portfolio::printportfolio()
 MarginCalculator::MarginCalculator(string XMLFileName)
 {
 	_IsRealTime = false;
-	_IsGlobal = false;
 	Parser = new XMLParser(XMLFileName);
 }
 
@@ -245,7 +247,7 @@ HRESULT MarginCalculator::GetDelta(Instrument* instrument, double& Delta)
 	return S_OK;
 }
 
-HRESULT MarginCalculator::CalculateSingle(Portfolio* portfolio ,Margin &Result, bool IncludeDMC/* = false*/)
+HRESULT MarginCalculator::Calculate(Portfolio* portfolio ,Margin &Result, bool IncludeDMC/* = false*/)
 {
 	DoJit = !CheckPortfolio(portfolio);
   //portfolio->printportfolio();
@@ -336,77 +338,6 @@ HRESULT MarginCalculator::CalculateSingle(Portfolio* portfolio ,Margin &Result, 
 	Result.NetIntraDayOptionValue = portfolio->NetIntraDayOptionValue;
 	return S_OK;
 }
-HRESULT MarginCalculator::FillPortfolios(Portfolio* portfolio, Portfolio* Positive, Portfolio* Negative)
-{
-	for (size_t i = 0; i < portfolio->GetInstruments().size(); i++)
-	{
-		Instrument* pInstrument = portfolio->GetInstruments()[i];
-		if (pInstrument->Count > 0 )
-		{
-			Instrument* instrument = new Instrument();
-			*instrument = *pInstrument;
-			Positive->AddInstrument(instrument);
-		}
-		else if(pInstrument->Count < 0 )
-		{
-			Instrument* instrument = new Instrument();
-			*instrument = *pInstrument;
-			Negative->AddInstrument(instrument);
-		}
-		else
-		{
-			Instrument* instrument1 = new Instrument();
-			*instrument1 = *pInstrument;
-			Positive->AddInstrument(instrument1);
-			Instrument* instrument2 = new Instrument();
-			*instrument2 = *pInstrument;
-			Negative->AddInstrument(instrument2);
-		}
-	}
-	return S_OK;
-}
-
-HRESULT MarginCalculator::CalculateGlobal(Portfolio* portfolio ,Margin &Result, bool IncludeDMC/* = false*/)
-{
-	CheckPortfolio(portfolio);
-	Result.Initial = 0;
-	Result.Maintenance = 0;
-	
-	Portfolio* portfolioPositive = new Portfolio();
-	Portfolio* portfolioNegative = new Portfolio();
-
-	FillPortfolios(portfolio,portfolioPositive,portfolioNegative);
-
-	Margin marginPositive;
-	Margin marginNegative;
-
-	CalculateSingle(portfolioPositive,marginPositive,IncludeDMC);
-	CalculateSingle(portfolioNegative,marginNegative,IncludeDMC);
-
-
-	Result.Initial = marginPositive.Initial + marginNegative.Initial;
-	Result.Maintenance = (Result.Initial *3) / 4;
-	//Result.Initial = (Result.Maintenance*4)/3;
-	Result.NetOptionValue = marginPositive.NetOptionValue + marginNegative.NetOptionValue;		//????
-	Result.NetOrderOptionValue = marginPositive.NetOrderOptionValue + marginNegative.NetOrderOptionValue;
-	Result.NetIntraDayOptionValue = marginPositive.NetIntraDayOptionValue + marginNegative.NetIntraDayOptionValue;
-
-	portfolioPositive->Clear();
-	portfolioNegative->Clear();
-
-	delete portfolioPositive;
-	delete portfolioNegative;
-
-	return S_OK;
-}
-
-HRESULT MarginCalculator::Calculate(Portfolio* portfolio, Margin &Result, bool IncludeDMC /*= false*/)
-{
-	if(_IsGlobal)
-		return CalculateGlobal(portfolio,Result,IncludeDMC);
-	else
-		return CalculateSingle(portfolio,Result,IncludeDMC);
-}
 
 HRESULT MarginCalculator::CalculateDetailed(Portfolio* portfolio, DetailedMargin &Result)
 {
@@ -448,134 +379,9 @@ HRESULT MarginCalculator::CalculateScenario(Portfolio* portfolio ,Margin &Result
 {
 	for (size_t i = 0; i < portfolio->CC.size() ; i++)
 	{
-	//	CalculateCCScenario(portfolio->CC[i],Result);
-    	CalculateCCScenarioNetOptionValueFix(portfolio->CC[i],Result);
-
+		CalculateCCScenario(portfolio->CC[i],Result);
 	}
   
-	return S_OK;
-}
-
-HRESULT MarginCalculator::CalculateCCScenarioNetOptionValueFix(CCLink* CC, Margin &Result)
-{
-	vector<Instrument*> Instruments = CC->Elements;
-
-	//size_t Count = Instruments.size();
-
-	//vector<double*> RA;
-
-	//for (int i = 0; i<Count; i++)
-	//{
-	//	int ID = Instruments[i]->ID;
-	//	
-	//	CC->Count += Instruments[i]->Count;
-
-	//	if (Instruments[i]->Type == FUTURES)
-	//	{
-	//		for(int j= 0; j< Parser->FuturesContracts.size(); j++)
-	//		{
-	//			if (Parser->FuturesContracts[j]->ID == ID && Parser->FuturesContracts[j]->Maturity == Instruments[i]->Maturity)
-	//			{
-	//				double* r =new double[16];
-	//				for(int k = 0; k < 16; k++)
-	//				{
-	//					r[k] = Parser->FuturesContracts[j]->ra[k] * Instruments[i]->Count/** Parser->FuturesContracts[j]->delta*/;
-	//					r[k] = Instruments[i]->ra[k] * Instruments[i]->Count/** Parser->FuturesContracts[j]->delta*/;
-	//					//cout << "RA:   " << Parser->FuturesContracts[j]->ra[k] << endl;
-	//					//cout << "RK:   " << r[k] << endl;
-	//				}
-	//				RA.push_back(r);
-	//			}
-	//				
-	//		}
-	//			
-	//	}
-	//	else if (Instruments[i]->Type == OPTION)
-	//	{
-	//		for(int j= 0; j< Parser->OptionContracts.size(); j++)
-	//		{
-	//			if (Parser->OptionContracts[j]->ID == ID && Parser->OptionContracts[j]->IsCall == Instruments[i]->IsCall 
-	//				&& Parser->OptionContracts[j]->EType == Instruments[i]->EType
-	//				&& Parser->OptionContracts[j]->Strike == Instruments[i]->Strike
-	//				&& Parser->OptionContracts[j]->Maturity == Instruments[i]->Maturity)
-	//			{
-	//				double* r= new double[16];;
-	//				for(int k = 0; k < 16; k++)
-	//					r[k] = Parser->OptionContracts[j]->ra[k] * Instruments[i]->Count/** Parser->OptionContracts[j]->delta*/;
-	//				RA.push_back(r);
-	//			}
-	//
-	//		}
-	//	}
-	//}
-
-	
-	
-	int Size = Instruments.size();
-	
-	double ResultArray[16];
-	for (int i = 0 ; i< 16; i++)
-	{
-		ResultArray[i] = 0;
-	}
-
-	bool CheckforNOV = true;		// Son admda Net Opsiyon Deeri ile maks senaryo deeri arasnda 
-									// karlatrma yapmamz gerekip gerekemediine karar vereceiz.
-	
-	double CCNetOptionValue = 0;		// CheckforNOV = true olduu mddete, NetOptionValue deerlerini topla!!!
-
-	for (int j= 0; j< Size; j++)
-	{
-		if( CheckforNOV && ((Instruments[j]->Type != ContractType::OPTION) || Instruments[j]->Count < 0))	// Herhangi bir enstrman opsiyon deilse ya da short ise koul salanmad
-			CheckforNOV = false;
-		
-		if(CheckforNOV)
-			CCNetOptionValue += Instruments[j]->OptionValue * Instruments[j]->CVF ;
-		for (int i=0; i<16; i++)
-		{
-			ResultArray[i] += Instruments[j]->ra[i];
-		}
-	}
-	
-	/*for (int i = 0; i < Size; i++)
-	{
-		delete [] RA[i];
-	}*/
-		
-	int highestID = 0;
-	double highest = ResultArray[0]; // note: don't do this if the array could be empty
-	for(int i = 1; i < 16; i++) {
-		if(ResultArray[i]>highest){
-			highest = ResultArray[i];
-			highestID = i;
-		}
-	}
-
-	int pairedID= 0;
-	for( vector< pair<int,int> >::iterator iter= Parser->ScanPointPairs.begin(); iter!=Parser->ScanPointPairs.end(); iter++)
-	{
-		if(iter->first == highestID)
-			pairedID = iter->second;
-	}
-	//pairedID ++;
-	CC->VolRisk = (highest - ResultArray[pairedID])/2;
-	
-	CC->VAR = highest;
-	CC->TimeRisk = (ResultArray[0]+ ResultArray[1])/2;
-
-	CC->TimeRisk += CC->VolRisk;
-
-	// Net Option Value - Scan arasnda karar!!
-	if(CheckforNOV)
-	{	
-		if(highest>CCNetOptionValue)
-			highest = CCNetOptionValue;
-	}
-	CC->Scan = highest;
-	
-	Result.Initial += highest;
-	Result.Maintenance += highest;
-	Instruments.clear();
 	return S_OK;
 }
 
@@ -717,27 +523,15 @@ HRESULT MarginCalculator::CalculateCCIntraSpread(CCLink* CC, double &Result)
 	}
 
 	double NetDelta = 0;
-	// for (size_t i= 0; i< CC->Tiers.size(); i++)
-	// {
-	// 	if ((CC->CC->FindTier(CC->Tiers[i]->tn))->StartDate == "")
-	// 	{
-	// 		NetDelta += CC->Tiers[i]->Longs - CC->Tiers[i]->Shorts;
-	// 	}
-		
-	// }
-	
-	for(map<int, LegContainer*>::iterator iter = CC->Tiers.begin();iter != CC->Tiers.end();iter++)
+	for (size_t i= 0; i< CC->Tiers.size(); i++)
 	{
-		pair<int, LegContainer*> temp = *iter;
-		LegContainer* tier = temp.second;
-		
-		if ((CC->CC->FindTier(tier->tn))->StartDate == "")
+		if ((CC->CC->FindTier(CC->Tiers[i]->tn))->StartDate == "")
 		{
-			NetDelta += tier->Longs - tier->Shorts;
+			NetDelta += CC->Tiers[i]->Longs - CC->Tiers[i]->Shorts;
 		}
+		
 	}
-
-	 CC->NetDelta = NetDelta;
+	CC->NetDelta = NetDelta;
 	double PriceRisk = CC->VAR - CC->TimeRisk;
 	double FPR = max(0.0,PriceRisk);
 	if (NetDelta == 0)
@@ -753,112 +547,6 @@ HRESULT MarginCalculator::CalculateCCIntraSpread(CCLink* CC, double &Result)
 }
 
 HRESULT MarginCalculator::CalculateCCIntraSpreadforDSpread(CCLink* CC, DSpread* dSpread, double &Result)
-{
-	if (dSpread->TLegs.size() <=0 )			// Tanml Tier yoksa atla
-	{
-		Result = 0;
-		return S_OK;
-	}
-	size_t counter = 0;
-		for(map<int, LegContainer*>::iterator iter = CC->Tiers.begin();iter != CC->Tiers.end();iter++)
-	{
-	pair<int, LegContainer*> temp = *iter;
-		LegContainer* tier = temp.second;
-		
-		if (tier->Longs > 0) 
-			counter++;
-		if (tier->Shorts > 0)
-			counter ++;
-	}
-if (counter == 0)
-	{
-		return S_FALSE;						// hi kalmadysa sonraki dngde girme
-	}
-	if(counter < dSpread->TLegs.size())			// instrument says eldeki spread tablosundan az ise k
-	{
-		Result = 0;
-		return S_OK;
-	}
-
-	size_t LegCount = dSpread->TLegs.size();		// spread tablosunun boyu
-
-	vector<double> APositive;
-	vector<double> ANegative;
-
-	double MinAPos = 0;
-	double MinANeg = 0;
-	
-	for(size_t i = 0; i< LegCount; i++)
-	{
-		if (dSpread->TLegs[i]->RS == 'A')
-		{
-			APositive.push_back(CC->FindTier(dSpread->TLegs[i]->tn)->Longs/dSpread->TLegs[i]->i);
-			ANegative.push_back(CC->FindTier(dSpread->TLegs[i]->tn)->Shorts/dSpread->TLegs[i]->i);
-		}
-		else if (dSpread->TLegs[i]->RS == 'B')
-		{
-			APositive.push_back(CC->FindTier(dSpread->TLegs[i]->tn)->Shorts/dSpread->TLegs[i]->i);
-			ANegative.push_back(CC->FindTier(dSpread->TLegs[i]->tn)->Longs/dSpread->TLegs[i]->i);
-		}
-	}
-
-	
-	MinAPos= APositive[0]; // note: don't do this if the array could be empty
-	for(size_t i = 1; i < APositive.size(); i++) {
-		if(APositive[i]<MinAPos)
-			MinAPos= APositive[i];
-	}
-
-	MinANeg= ANegative[0]; // note: don't do this if the array could be empty
-	for(size_t i = 1; i < ANegative.size(); i++) {
-		if(ANegative[i]<MinANeg)
-			MinANeg= ANegative[i];
-	}
-
-	double Max = max(MinAPos,MinANeg);
-	if (Max == 0)
-	{
-		Result = 0;
-		return S_FALSE;
-	}
-	if (Max == MinAPos)
-	{
-		for (size_t i = 0; i< LegCount; i++)
-		{
-			if (dSpread->TLegs[i]->RS == 'A')
-			{
-				CC->FindTier(dSpread->TLegs[i]->tn)->Longs -= Max;
-			}
-			else if (dSpread->TLegs[i]->RS == 'B')
-			{
-				CC->FindTier(dSpread->TLegs[i]->tn)->Shorts -= Max;
-			}
-		}
-	}
-	else
-	{
-		for (size_t i = 0; i< LegCount; i++)
-		{
-			if (dSpread->TLegs[i]->RS == 'A')
-			{
-				CC->FindTier(dSpread->TLegs[i]->tn)->Shorts -= Max;
-			}
-			else if (dSpread->TLegs[i]->RS == 'B')
-			{
-				CC->FindTier(dSpread->TLegs[i]->tn)->Longs -= Max;
-			}
-		}
-	}
-	
-	Result = Max*dSpread->Rate;
-	APositive.clear();
-	ANegative.clear();
-	
-	return S_OK;
-}
-
-
-/*HRESULT MarginCalculator::CalculateCCIntraSpreadforDSpread(CCLink* CC, DSpread* dSpread, double &Result)
 {
 	if (dSpread->TLegs.size() <=0 )			// Tan�ml� Tier yoksa atla
 	{
@@ -958,7 +646,7 @@ if (counter == 0)
 	ANegative.clear();
 	
 	return S_OK;
-}*/
+}
 
 HRESULT MarginCalculator::CalculateInterSpread( Portfolio* portfolio, Margin &Result)
 {
@@ -1707,7 +1395,6 @@ HRESULT MarginCalculator::FillIDsModifiedwithOrderPrice(Portfolio* portfolio)
 			{
 				XMLPrice = (_IsRealTime) ? it->second->PriceRT : it->second->Price;
 				CVF = it->second->cvf;
-				instrument->CVF = CVF;
 			}
 			if (XMLPrice != -1)
 			{
@@ -1998,21 +1685,14 @@ HRESULT MarginCalculator::UpdateCCLinkModified2(CCLink* CC, CombinedCommodity* P
 	if (CC->CC == NULL)
 	{
 		CC->CC = ParserCC;
-for(map<int, Tier*>::iterator iter = CC->CC->intraTiers.begin();iter != CC->CC->intraTiers.end();iter++)
-			{
-				pair<int, Tier*> temp = *iter;
-				LegContainer* pLeg = new LegContainer();
-				pLeg->tn = temp.second->tn;
-				CC->Tiers.insert(std::make_pair(pLeg->tn, pLeg));
-			}
 
-/*		for (size_t i = 0; i< CC->CC->intraTiers.size(); i++)
+		for (size_t i = 0; i< CC->CC->intraTiers.size(); i++)
 		{
 			LegContainer* pLeg = new LegContainer();
 			pLeg->tn = CC->CC->intraTiers[i]->tn;
 			CC->Tiers.insert(std::make_pair(CC->CC->intraTiers[i]->tn, pLeg));
 			//CC->Tiers.insert(,) push_back(pLeg);
-		}*/
+		}
 
 	}
 	//map<string,double> MonthDeltas;
@@ -2033,12 +1713,10 @@ for(map<int, Tier*>::iterator iter = CC->CC->intraTiers.begin();iter != CC->CC->
 
 HRESULT MarginCalculator::UpdateCCLinkModifiedContinued(CCLink* CC)
 {
-	for(map<int, Tier*>::iterator iter = CC->CC->intraTiers.begin();iter != CC->CC->intraTiers.end();iter++)
+	for (size_t i = 0; i< CC->CC->intraTiers.size(); i++)
 	{
-		pair<int, Tier*> temp = *iter;
-		Tier* tier = temp.second;
-		string start = tier->StartDate;
-		string end = tier->EndDate;
+		string start = CC->CC->intraTiers[i]->StartDate;
+		string end = CC->CC->intraTiers[i]->EndDate;
 
 		map<string,double>::iterator it;
 		for(it = CC->MonthDeltas.begin(); it != CC->MonthDeltas.end(); it++) {
@@ -2048,18 +1726,18 @@ HRESULT MarginCalculator::UpdateCCLinkModifiedContinued(CCLink* CC)
 			if (start == "")		// BO� tn i�in eleman topla
 			{
 				if (Value> 0)
-					CC->Tiers[tier->tn]->Longs += Value;
+					CC->Tiers[i]->Longs += Value;
 				else
-					CC->Tiers[tier->tn]->Shorts += abs(Value);
+					CC->Tiers[i]->Shorts += abs(Value);
 			}
 
 			else if ( Maturity.compare(start) >=0 &&  Maturity.compare(end) <=0 )	// dolular i�in topla
 			{
 
 				if (Value > 0)
-					CC->Tiers[tier->tn]->Longs += Value;
+					CC->Tiers[i]->Longs += Value;
 				else
-					CC->Tiers[tier->tn]->Shorts += abs(Value);
+					CC->Tiers[i]->Shorts += abs(Value);
 
 			}
 		}
@@ -2282,7 +1960,7 @@ double MarginEstimator::CalculateBrutewithGrouping(Margin& ResultMargin)
 		{
 			FirstHalf = Result.Initial - Result.NetOptionValue ;
 		}
-		//if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )// 2016.5.31 - Teminat eksi kyordu!!!! Buray kaldrdk!!!
+		if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )
 		{
 			SecondHalf = Result.NetOrderOptionValue + Result.NetIntraDayOptionValue;
 		}
@@ -2373,7 +2051,7 @@ double MarginEstimator::CalculateBrute(Margin& ResultMargin)
 		{
 			FirstHalf = Result.Initial - Result.NetOptionValue ;
 		}
-		//if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )		// 2016.5.31 - Teminat eksi kyordu!!!! Buray kaldrdk!!!
+		if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )
 		{
 			SecondHalf = Result.NetOrderOptionValue + Result.NetIntraDayOptionValue;
 		}
@@ -2739,7 +2417,7 @@ double MarginEstimator::CalculatewithIterationwithGrouping(string StartingArray,
 				{
 					FirstHalf = Result.Initial - Result.NetOptionValue ;
 				}
-				//if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )// 2016.5.31 - Teminat eksi kyordu!!!! Buray kaldrdk!!!
+				if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )
 				{
 					SecondHalf = Result.NetOrderOptionValue + Result.NetIntraDayOptionValue;
 				}
@@ -3047,7 +2725,7 @@ double MarginEstimator::CalculatewithIteration(string StartingArray, int Length,
 			{
 				FirstHalf = Result.Initial - Result.NetOptionValue ;
 			}
-			//if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )// 2016.5.31 - Teminat eksi kyordu!!!! Buray kaldrdk!!!
+			if (Result.NetOrderOptionValue + Result.NetIntraDayOptionValue > 0 )
 			{
 				SecondHalf = Result.NetOrderOptionValue + Result.NetIntraDayOptionValue;
 			}

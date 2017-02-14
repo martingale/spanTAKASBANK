@@ -3,11 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include "SpanNative.h"
-//#include <Rinternals.h>
-//#include <Rdefines.h> 
-//#include <Rcpp.h>
-//#include <R.h>
-
 //#include "R.h"
 //#include "Rmath.h"
 //#include "Rinternals.h"
@@ -37,7 +32,6 @@ int		 CalculateDetailedMargin(double& Scenario,double& IntraSpread,double& Inter
 //int		 UpdateFuturesScenarioValues(char* Symbol, char* Maturity, double Values[17]);
 
 int		 SetRT(bool IsRealTime = true);
-int		 SetGlobal(bool IsGlobal = false);
 
 int		 UpdateOptionScenarios(char* Symbol, bool IsCall, bool IsAmerican, double Strike, char* Maturity, double UnderlyingPrice, double Price, double Volatility, double RiskFreeRate);
 

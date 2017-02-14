@@ -25,10 +25,10 @@ namespace MARGIN
 #pragma region KEYS
 	class FuturesKey
 	{
-		string _Symbol;
-		string _Maturity;
+		std::string _Symbol;
+		std::string _Maturity;
 	public:
-		FuturesKey(string Symbol, string Maturity): _Symbol(Symbol),_Maturity(Maturity){}
+		FuturesKey(std::string Symbol, std::string Maturity): _Symbol(Symbol),_Maturity(Maturity){}
 		bool operator<(const FuturesKey &right) const {
 			return (_Symbol < right._Symbol && _Maturity < right._Maturity);
 		}
@@ -39,13 +39,13 @@ namespace MARGIN
 
 	class OptionKey
 	{
-		string _Symbol;
-		string _Maturity;
+		std::string _Symbol;
+		std::string _Maturity;
 		bool _IsCall;
 		ExerciseType _EType;
 		double _Strike;
 	public:
-		OptionKey(string Symbol, string Maturity, bool IsCall, ExerciseType EType, double Strike)
+		OptionKey(std::string Symbol, std::string Maturity, bool IsCall, ExerciseType EType, double Strike)
 			: _Symbol(Symbol),_Maturity(Maturity), _IsCall(IsCall), _EType(EType), _Strike(Strike){}
 		bool operator<(const OptionKey &right) const {
 			if (this->_Symbol < right._Symbol)
@@ -157,25 +157,11 @@ namespace MARGIN
 	//	}
 	//};
 
-	struct Currency
-	{
-		string currency;
-		string symbol;
-		int decimalPos;
-	};
-
-	struct CurrencyConversion
-	{
-		string fromCur;
-		string toCur;
-		double factor;
-	};
-
 	struct Tier
 	{
 		int tn;
-		string StartDate;
-		string EndDate;
+		std::string StartDate;
+		std::string EndDate;
 	};
 
 	struct SOMTier
@@ -186,18 +172,18 @@ namespace MARGIN
 
 	struct TLeg
 	{
-		string cc;
+		std::string cc;
 		int tn;
-		string spe;
-		string epe;
+		std::string spe;
+		std::string epe;
 		char RS;
 		double i;
 	};
 
 	struct PLeg
 	{
-		string cc;
-		string pe;
+		std::string cc;
+		std::string pe;
 		char RS;
 		double i;
 	};
@@ -226,15 +212,15 @@ namespace MARGIN
 	struct SpotRate
 	{
 		int r;
-		string pe;
+		std::string pe;
 		double sprd;
 		double outr;
 	};
 
 	struct CombinedCommodity
 	{
-		string cc;
-		string name;
+		std::string cc;
+		std::string name;
 		vector<int> pfLinks;
 		map<int, Tier*> intraTiers;
 		//vector<Tier*> intraTiers;
@@ -303,8 +289,8 @@ namespace MARGIN
 	struct Physical
 	{
 
-		string Code;
-		string Name;
+		std::string Code;
+		std::string Name;
 		int ID;
 	/*public:
 		Physical(string Code, string Name, int ID);
@@ -316,19 +302,16 @@ namespace MARGIN
 	struct Option
 	{
 		Option(): CC(NULL), PriceScan(0){}
-		string Code;
-		string Name;
+		std::string Code;
+		std::string Name;
 		int ID;
 		int UnderlyingID;
-		string Maturity;
-		string MaturityDay;
-
+		std::string Maturity;
 		double Strike;
 		bool IsCall;
 		double cvf;
 		double Price;
 		double PriceRT;
-		string Currency;
 		
 		ExerciseType EType;
 		double delta;
@@ -347,15 +330,13 @@ namespace MARGIN
 	struct Futures
 	{
 		Futures(): CC(NULL), PriceScan(0){} 
-		string Code;
-		string Name;
+		std::string Code;
+		std::string Name;
 		int ID;
 		int UnderlyingID;
-		string Maturity;
-		string MaturityDay;
+		std::string Maturity;
 		double Strike;
 		bool IsCall;
-		string Currency;
 		double ra[17];
 		double raRT[17];		// Real Time scenario values
 		double delta;
@@ -376,35 +357,31 @@ namespace MARGIN
 	{
 		
 	//	TiXmlDocument* XMLDOC;
-		ofstream* outputFile;
+		std::ofstream outputFile;
 	public:
-		SPANNATIVEDLL_API XMLParser(string FileName);
+		SPANNATIVEDLL_API XMLParser(std::string FileName);
 
 		SPANNATIVEDLL_API virtual ~XMLParser();
 		//int Parse();
 
-		int ReCalculateOptionScenarios(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double UnderlyingPrice, double Volatility, double RiskFreeRate);
-		int ReCalculateFutureScenarios(string Symbol, string Maturity, double Price);
+		int ReCalculateOptionScenarios(std::string Symbol, bool IsCall, std::string Maturity, ExerciseType ExType, double Strike, double UnderlyingPrice, double Volatility, double RiskFreeRate);
+		int ReCalculateFutureScenarios(std::string Symbol, std::string Maturity, double Price);
 
-		string GetCC(int ID);
+		std::string GetCC(int ID);
 		
 		vector<Physical*> Physicals;
 		//vector<Option*> OptionContracts;
 		map<OptionKey, Option*> OptionContracts;
 
 		//vector<Futures*> FuturesContracts;
-		map<pair<string,string>, Futures*> FuturesContracts;
+		map<pair<std::string,std::string>, Futures*> FuturesContracts;
 		vector<CombinedCommodity*> CCs;
 		vector<DSpread*> InterSpreads;
-		vector<pair<int,int>> ScanPointPairs;
+		vector<pair<int, int> > ScanPointPairs;
 		vector<ScenarioPoint*> Scenarios;
-		vector<Currency*> Currencies;
-		vector<CurrencyConversion*> CurrencyConversions;
 
 		void PrintOptions();
 		void PrintFutures();
-
-		string CURRENCY;
 	private:
 		//int FillScanPairs();
 		//int FillPhysicals();

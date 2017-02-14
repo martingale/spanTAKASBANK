@@ -1,17 +1,22 @@
+# require("Rcpp")
+#sourceCpp("./R/libleminat.cpp")
 makePortfolio<- function(pTable)
 {
 # sapply(pTable,class)
 if(!hasArg(pTable)){return(FALSE)}
   
 head(pTable)
+
+if(grepl("^[O F]_",pTable[1,1]))
+{
 isins<-pTable$Sozlesme
 substr(isins,nchar(isins)-1,nchar(isins))
-begin<-unlist(gregexpr(pattern="[0-1][0-9]16",isins,ignore.case = T))
+begin<-unlist(gregexpr(pattern="[0-1][0-9]1[6 7]",isins,ignore.case = T))
 
 
 IsOption<- as.numeric(substr(isins,1,1)=="O")
 IsEquity<- as.numeric(!grepl("XU030",isins)) & (!grepl("TRYUSD",isins) )
-UnderlyingSymbol<-substr(isins, 3, begin - 2 + !IsOption )
+UnderlyingSymbol<-substr(isins, 3, begin - 1 + !IsOption )
 UnderlyingSymbol<- ifelse(IsEquity, paste0(UnderlyingSymbol,"E"), UnderlyingSymbol)
 
 Amount<-pTable$Net.Pozisyon
@@ -25,31 +30,35 @@ IsCall<- as.numeric( substr(isins,begin+4,begin+4)=="C" )
 Maturity<-paste0(
   "20",
   substr(isins,start = begin+2,begin+3),
-  substr(isins,start = begin,begin+1),
-  substr(isins,nchar(isins)-1,nchar(isins))
+  substr(isins,start = begin,begin+1) #,
+  # substr(isins,nchar(isins)-1,nchar(isins))
 )
 
-StrikePrice<-as.numeric(substr(isins,begin+5,nchar(isins)-2))
+StrikePrice<-as.numeric(substr(isins,begin+5,nchar(isins)))
 OExPrice<- (-1)
 
 df<-data.frame(UnderlyingSymbol,	Amount,	
                IsOrder	,IsIntraday,	MarketPrice,	IsOption,	IsAmerican,	IsCall,	Maturity,	StrikePrice	,OExPrice)
+} else {
+  df<-pTable
+}
 .clearPortfolio()
-# print(df)
-cat("# of items:", nrow(df))
+cat("# of items: ", nrow(df), " ")
+
+
 for(i in c(1:nrow(df))){
    
-  addItem(ticker=UnderlyingSymbol[i],
-          isOption = as.logical(IsOption[i]),
-          isCall = as.logical(IsCall[i]),
-          strike = StrikePrice[i],
-          cMaturity = Maturity[i],
-          quantity = Amount[i],
-          price = MarketPrice,
-          oExPrice = OExPrice,
-          isOrder = as.logical(IsOrder[i]),
-          isIntraDay = as.logical(IsIntraday[i]),
-          EffectPremium = TRUE)
+  addItem(ticker=  as.character(df$UnderlyingSymbol[i]),
+          isOption = as.logical(df$IsOption[i]),
+          isCall = as.logical(df$IsCall[i]),
+          strike = df$StrikePrice[i],
+          cMaturity = as.character(df$Maturity[i]),
+          quantity = df$Amount[i],
+          price = df$MarketPrice[i],
+          oExPrice = df$OExPrice[i],
+          isOrder = as.logical(df$IsOrder[i]),
+          isIntraDay = as.logical(df$IsIntraday[i]),
+          EffectPremium = F)
   
   
 }
@@ -71,7 +80,11 @@ margin <- function(pTable, onlyPositions=TRUE){
     pTable<-pTable[!pTable$IsOrder,,drop=F]
   }
   if(!isCalculatorLoaded()) {cat("Please load the Margin Calculator first.\n"); return(NULL)}
-  if(makePortfolio(pTable)) return(.margin(1)) else return(NULL)
+  if(!as.logical(nrow(pTable))) {
+      cat("There is no position in the portfolio.\n"); return(NULL)
+    } else {
+      makePortfolio(pTable); return(.margin(1)) 
+    }
   
 }
 
@@ -94,3 +107,7 @@ marginwc <- function(pTable){
   return(res)
 }
 
+loadSPN<- function(xmlFileName){
+  if(!hasArg(xmlFileName)){return(FALSE)}
+  .loadSPN(normalizePath(xmlFileName))
+}

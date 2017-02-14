@@ -8,10 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-//#include <R.h>
-//#include <Rinternals.h>
-//#include <Rdefines.h> 
-//#include <Rcpp.h>
+
 //  #include <inttypes.h>
 //  typedef long long __int64_t;
 
@@ -72,10 +69,8 @@ namespace MARGIN
 		double IntraDayOptionValue;
 		bool IsIntraDay;
 		bool EffectPremium;
-		int CVF;
 
-
-		Instrument(){Price =0;OrderExecutionPrice = 0;OptionValue =0;OrderOptionValue =0;IntraDayOptionValue=0;CVF = 0;}
+		Instrument(){Price =0;OrderExecutionPrice = 0;OptionValue =0;OrderOptionValue =0;IntraDayOptionValue=0;}
 
 		Instrument & operator=(const Instrument &rhs)
 		{
@@ -96,7 +91,6 @@ namespace MARGIN
 			OrderExecutionPrice = rhs.OrderExecutionPrice;
 			IsIntraDay = rhs.IsIntraDay;
 			EffectPremium = rhs.EffectPremium;
-			CVF = rhs.CVF;
 			return *this;
 		}
 		/*public:
@@ -223,15 +217,11 @@ namespace MARGIN
 		char* _ErrorPath;
 		bool _DumpErrors;
 		bool _IsRealTime;
-		bool _IsGlobal;
-
 		
 	public:
 		SPANNATIVEDLL_API MarginCalculator(){_IsRealTime = false;};
 		SPANNATIVEDLL_API MarginCalculator(string XMLFileName);
 		SPANNATIVEDLL_API int Calculate(Portfolio* portfolio, Margin &Result, bool IncludeDMC = false);
-		SPANNATIVEDLL_API int CalculateSingle(Portfolio* portfolio, Margin &Result, bool IncludeDMC = false);
-		SPANNATIVEDLL_API int CalculateGlobal(Portfolio* portfolio, Margin &Result, bool IncludeDMC = false);		
 		SPANNATIVEDLL_API int CalculateDetailed(Portfolio* portfolio, DetailedMargin &Result);
 		SPANNATIVEDLL_API int GetPriceScan(Instrument* instrument, double& PriceScan);
 		SPANNATIVEDLL_API int GetDelta(Instrument* instrument, double& Delta);
@@ -251,14 +241,11 @@ namespace MARGIN
 		SPANNATIVEDLL_API int SetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike, double Delta);
 		SPANNATIVEDLL_API int ResetOptionDelta(string Symbol, bool IsCall, string Maturity, ExerciseType ExType, double Strike);
 
-		SPANNATIVEDLL_API void SetIsGlobal(bool IsGlobal = false){_IsGlobal = IsGlobal;}
 
 		SPANNATIVEDLL_API ~MarginCalculator();
 	private:
 		int CalculateScenario(Portfolio* portfolio ,Margin &Result);
 		int CalculateCCScenario(CCLink* CC, Margin &Result);
-		int CalculateCCScenarioNetOptionValueFix(CCLink* CC, Margin &Result);
-
 		int CalculateIntraSpread(Portfolio* portfolio, Margin &Result);
 		int CalculateCCIntraSpread(CCLink* CC, double &Result);
 		int CalculateCCIntraSpreadforDSpread(CCLink* CC, DSpread* dSpread, double &Result);
@@ -283,7 +270,6 @@ namespace MARGIN
 
 		bool CheckCCNetDelta(Portfolio* portfolio);
 		bool CheckPortfolio(Portfolio* portfolio);
-		int FillPortfolios(Portfolio* portfolio, Portfolio* Positive, Portfolio* Negative); 
 	};	
 	#pragma endregion
 

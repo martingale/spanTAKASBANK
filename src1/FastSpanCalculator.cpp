@@ -1,8 +1,14 @@
 //#include "Stdafx.h"
 #include "FastSpanCalculator.h"
+#include <R.h>
+#include <Rinternals.h>
+#include <Rdefines.h> 
+#include <Rcpp.h>
+
+
 using namespace MARGIN;
 using namespace std;
-//using namespace Rcpp;
+using namespace Rcpp;
 
 // Objects
 std::map<int, Portfolio*> Portfolios;
@@ -48,13 +54,7 @@ int		 SetRT(bool IsRealTime /*= true*/)
 	CALCULATOR->SetRealTime(IsRealTime);
 	return 0;
 }
-int		 SetGlobal(bool IsGlobal /*= false*/)
-{
-	if (CALCULATOR == NULL)
-		return -1; 
-	CALCULATOR->SetIsGlobal(IsGlobal);
-	return 0;
-}
+
 
 //int		_ UpdateOptionScenarioValues(char* Symbol, bool IsCall, bool IsAmerican, double Strike, char* Maturity, double Values[17])
 //{

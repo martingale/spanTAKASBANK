@@ -1,4 +1,3 @@
-#include <Rcpp.h>
 #include "FastSpanCalculator.h"
 #include <iostream>
 // #include <dlfcn.h>
@@ -10,13 +9,14 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h> 
+#include <Rcpp.h>
 
 // #include "minicsv.h"
 
 
 using namespace std;
 using namespace Rcpp;
-// [[Rcpp::export(name=".loadSPN")]]
+// [[Rcpp::export(name="loadSPN")]]
 RcppExport SEXP  loadSPN (SEXP xmlFile)
 {
   /*	  void* handle = dlopen("libSpanNative.so", RTLD_LAZY);
@@ -108,7 +108,7 @@ RcppExport SEXP  addItem (std::string ticker, SEXP isOption, SEXP isCall, SEXP s
 //  AddtoPortfolio("GARANE",false,false,false,255,"201212S0",100); //dummy; for purpose of check
 AddtoPortfoliowithOrderPrice(cticker,bIsOption,bIsCall,false,dStrike,sMaturity,
                              iquantity,dprice,doExPrice,bIsOrder,bIsIntraday,bEffectPremium); 
-//Rcpp::Rcout<< cticker<<std::endl;
+Rcout<< cticker<<std::endl;
   
   return( Rcpp::wrap(true));
   
@@ -127,8 +127,8 @@ RcppExport SEXP  margin (SEXP arg1)
   // char *Carry;
   
   CalculateMargin(Initial,Maintenance,NetOptionValue,NetOrderOptionValue,NetIntraDayOptionValue,false);
- // Rcpp::Rcout<<Initial<<" / "<<Maintenance<< "/" <<NetOptionValue <<"/" << NetIntraDayOptionValue<< std::endl;
-  Rcpp::Rcout<< "Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
+Rcout<<Initial<<" / "<<Maintenance<< "/" <<NetOptionValue <<"/" << NetIntraDayOptionValue<< std::endl;
+  Rcout<< "Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
   //ClearPortfolio();
   //TerminateMarginCalculator();
   // return( Rcpp::wrap(Initial));
@@ -137,11 +137,9 @@ RcppExport SEXP  margin (SEXP arg1)
   // return(Rcpp::wrap(arg1));
   double total = Initial-NetOptionValue;
   total = total>0. ? total : 0.;
-  return Rcpp::List::create(Rcpp::Named("Initial")=Rcpp::wrap(Initial),
-                            Rcpp::Named("NetOption")=Rcpp::wrap(NetOptionValue),
-                            Rcpp::Named("NetIntraDayOptionValue")=Rcpp::wrap(NetIntraDayOptionValue),
-                            Rcpp::Named("NetOrderOptionValue")=Rcpp::wrap(NetOrderOptionValue),
-                            Rcpp::Named("Total")=Rcpp::wrap(total)
+  return List::create(Rcpp::Named("Initial")=wrap(Initial),
+                      Rcpp::Named("NetOption")=wrap(NetOptionValue),
+                      Rcpp::Named("Total")=wrap(total)
   );
 }
 
@@ -156,19 +154,19 @@ RcppExport SEXP  marginwc (SEXP arg1)
   
   Carry[strlen(Carry) - 1] = '\0';
   string str(Carry);
-  // Rcpp::Rcout<<Initial<<" / "<<Maintenance<< "/" <<NetOptionValue <<"/" << NetIntraDayOptionValue<<". The worst order sequence" <<
+  Rcout<<Initial<<" / "<<Maintenance<< "/" <<NetOptionValue <<"/" << NetIntraDayOptionValue<<". The worst order sequence" <<
     //(unsigned)strlen(Carry) <<
-  //  ": "<<Carry<< std::endl;
-  Rcpp::Rcout<< "Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
+    ": "<<Carry<< std::endl;
+  Rcout<< "Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
 
    double total = Initial-NetOptionValue;
   total = total>0. ? total : 0.;
-  return Rcpp::List::create(Rcpp::Named("Initial")=Rcpp::wrap(Initial),
-                      Rcpp::Named("NetOptionValue")=Rcpp::wrap(NetOptionValue),
-                      Rcpp::Named("NetOrderOptionValue")=Rcpp::wrap(NetOrderOptionValue),
-                      Rcpp::Named("NetIntraDayOptionValue")=Rcpp::wrap(NetIntraDayOptionValue),
-                      Rcpp::Named("Total")=Rcpp::wrap(total),
-                      Rcpp::Named("WorstCaseOrderSequence")=Rcpp::wrap(str)
+  return List::create(Rcpp::Named("Initial")=wrap(Initial),
+                      Rcpp::Named("NetOptionValue")=wrap(NetOptionValue),
+                      Rcpp::Named("NetOrderOptionValue")=wrap(NetOrderOptionValue),
+                      Rcpp::Named("NetIntraDayOptionValue")=wrap(NetIntraDayOptionValue),
+                      Rcpp::Named("Total")=wrap(total),
+                      Rcpp::Named("WorstCaseOrderSequence")=wrap(str)
                       );
 }
 /*
