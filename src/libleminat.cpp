@@ -150,15 +150,19 @@ RcppExport SEXP  marginwc (SEXP arg1)
 {
   
   double Initial, Maintenance, NetOptionValue, NetOrderOptionValue,NetIntraDayOptionValue;
-  char *Carry;
+  char* Carry;
+  int j;
   
-  CalculateWorstCase(Initial,Maintenance,NetOptionValue,NetOrderOptionValue,NetIntraDayOptionValue,false ,&Carry, true,true);
+  CalculateWorstCase(Initial,Maintenance,NetOptionValue,NetOrderOptionValue,NetIntraDayOptionValue,false ,&Carry, false,false);
+  // int   CalculateWorstCase(double& Initial,double& Maintenance, double& NetOptionValue, double& NetOrderOptionValue, double& NetIntraDayOptionValue, bool DoBrute,char** CarryOut, bool IncludeDMC /*= false*/, bool withGrouping /*= false*/)
+
+  //Carry[strlen(Carry) - 1] = '\0';
   
-  Carry[strlen(Carry) - 1] = '\0';
   string str(Carry);
-  // Rcpp::Rcout<<Initial<<" / "<<Maintenance<< "/" <<NetOptionValue <<"/" << NetIntraDayOptionValue<<". The worst order sequence" <<
-    //(unsigned)strlen(Carry) <<
-  //  ": "<<Carry<< std::endl;
+  //std::fprintf(stderr,"%f\n",NetIntraDayOptionValue);
+  // std::cout<<Initial<<" / "<< "/" <<NetOptionValue <<"/" << NetOrderOptionValue<<". The worst order sequence" <<
+  // (unsigned)strlen(Carry) <<
+  // ": "<<Carry<< std::endl;
   Rcpp::Rcout<< "Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
 
    double total = Initial-NetOptionValue;
@@ -171,6 +175,7 @@ RcppExport SEXP  marginwc (SEXP arg1)
                       Rcpp::Named("WorstCaseOrderSequence")=Rcpp::wrap(str)
                       );
 }
+
 /*
 // [[Rcpp::export(name=".dmargin")]]
 RcppExport SEXP  dmargin (SEXP arg1)
@@ -194,13 +199,7 @@ RcppExport SEXP  dmargin (SEXP arg1)
   // return( Rcpp::wrap(Total));
 
 }
-
-
 */
-
-
-
-
 
 
 
