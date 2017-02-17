@@ -156,7 +156,7 @@ RcppExport SEXP  marginwc (SEXP arg1)
   CalculateWorstCase(Initial,Maintenance,NetOptionValue,NetOrderOptionValue,NetIntraDayOptionValue,false ,&Carry, false,true);
   // int   CalculateWorstCase(double& Initial,double& Maintenance, double& NetOptionValue, double& NetOrderOptionValue, double& NetIntraDayOptionValue, bool DoBrute,char** CarryOut, bool IncludeDMC /*= false*/, bool withGrouping /*= false*/)
 
-  //Carry[strlen(Carry) - 1] = '\0';
+  Carry[strlen(Carry) - 1] = '\0';
   
   string str(Carry);
   //std::fprintf(stderr,"%f\n",NetIntraDayOptionValue);
