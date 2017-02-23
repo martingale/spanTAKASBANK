@@ -129,7 +129,7 @@ int FillCurrencyConversions(TiXmlDocument* XMLDOC,vector<CurrencyConversion*>& C
 		string strtoCur = node->Value(); 
 		TiXmlElement* factor = curConv->FirstChildElement("factor");
 		node = factor->FirstChild();
-		int Factor = atoi(node->Value()); 
+		double Factor = atof(node->Value()); 
 	//	cout << "Id: " << ID << ", Code: " << Code << ", Name: " << Name << endl;
 		CurrencyConversion* currConv = new CurrencyConversion();
 		currConv->fromCur = strfromCur;
