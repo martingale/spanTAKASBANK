@@ -575,6 +575,16 @@ HRESULT MarginCalculator::CalculateCCScenarioNetOptionValueFix(CCLink* CC, Margi
 		if(highest>CCNetOptionValue)
 			highest = CCNetOptionValue;
 	}
+	
+	double factor = CC->CC->factor;
+	
+	// Decimal point adjustment with PC SPAN and TAKASBANK for foreign currency requirement. (2017-02-24 Harun)
+	if(factor!=0) 
+	 {
+	 	double recalculatedHighest = round(highest/factor);
+	 	recalculatedHighest*=factor;
+	 	highest = recalculatedHighest;
+	 }
 	CC->Scan = highest;
 	
 	Result.Initial += highest;
