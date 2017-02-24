@@ -39,6 +39,10 @@ double GetCounter(__int64 CounterStart, double PCFreq)
 }
 
 */
+double round(double number)
+{
+  return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
+}
 
 #pragma endregion
 
@@ -519,7 +523,7 @@ HRESULT MarginCalculator::CalculateCCScenarioNetOptionValueFix(CCLink* CC, Margi
 		ResultArray[i] = 0;
 	}
 
-	bool CheckforNOV = true;		// Son admda Net Opsiyon Deeri ile maks senaryo deeri arasnda 
+	bool CheckforNOV = true;		// Son adimda Net Opsiyon Deeri ile maks senaryo deeri arasnda 
 									// karlatrma yapmamz gerekip gerekemediine karar vereceiz.
 	
 	double CCNetOptionValue = 0;		// CheckforNOV = true olduu mddete, NetOptionValue deerlerini topla!!!
@@ -2106,7 +2110,7 @@ HRESULT MarginCalculator::UpdateCCLinkModified(CCLink* CC, CombinedCommodity* Pa
 			string Maturity = it->first;
 			double Value = it->second;
 	
-			if (start == "")		// BO� tn i�in eleman topla
+			if (start == "")		// BO tn icin eleman topla
 			{
 				if (Value> 0)
 					CC->Tiers[i]->Longs += Value;
@@ -2114,7 +2118,7 @@ HRESULT MarginCalculator::UpdateCCLinkModified(CCLink* CC, CombinedCommodity* Pa
 					CC->Tiers[i]->Shorts += abs(Value);
 			}
 				
-			else if ( Maturity.compare(start) >=0 &&  Maturity.compare(end) <=0 )	// dolular i�in topla
+			else if ( Maturity.compare(start) >=0 &&  Maturity.compare(end) <=0 )	// dolular icin topla
 			{
 			
 				if (Value > 0)

@@ -241,6 +241,7 @@ namespace MARGIN
 		vector<SOMTier*> SOMTiers;
 		vector<DSpread*> dSpreads;
 		vector<SpotRate*> SpotRates;
+		double factor;
 		Tier* FindTier(int tn)
 		{
 			map<int,Tier*>::iterator it;

@@ -516,7 +516,7 @@ int AttachCC(XMLParser * Parser, int Link, CombinedCommodity* CC)
 	return Count;
 }
 
-int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<CombinedCommodity*>& CCs)
+int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<CombinedCommodity*>& CCs, vector<CurrencyConversion*> currencyConversions)
 {
 	TiXmlHandle hDOC(XMLDOC);
 	TiXmlElement *clearingOrg = hDOC.FirstChild("spanFile").FirstChild( "pointInTime" ).FirstChild( "clearingOrg" ).ToElement();
@@ -534,6 +534,13 @@ int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<Co
 		TiXmlElement* CC = ccDef->FirstChildElement("cc");
 		TiXmlNode* node = CC->FirstChild();
 		pCC->cc = node->Value(); 
+		TiXmlElement* currency = ccDef->FirstChildElement("currency");
+		node = currency->FirstChild();
+		string strcurrency = node->Value();
+		double factor = 1;
+		if(strcurrency != "TRY")
+		factor = getConversionFactor(strcurrency,"TRY",currencyConversions);
+		pCC->factor = factor;
 		TiXmlElement* Name = ccDef->FirstChildElement("name");
 		if (Name!= NULL)
 		{
@@ -813,7 +820,7 @@ int Parse(TiXmlDocument* XMLDOC, XMLParser * Parser)
 	FillPhysicals(XMLDOC, Parser->Physicals);
 	FillOptions(XMLDOC, Parser->OptionContracts, Parser->CurrencyConversions);
 	FillFutures(XMLDOC, Parser->FuturesContracts, Parser->CurrencyConversions);
-	FillCombinedCommodities(XMLDOC, Parser, Parser->CCs);
+	FillCombinedCommodities(XMLDOC, Parser, Parser->CCs, Parser->CurrencyConversions);
 	FillInterSpreads(XMLDOC, Parser->InterSpreads);
 	//Parser->PrintOptions();
 	//Parser->PrintFutures();
