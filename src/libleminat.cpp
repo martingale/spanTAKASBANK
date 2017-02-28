@@ -160,7 +160,7 @@ RcppExport SEXP  marginwc (SEXP arg1)
   
   string str(Carry);
   //std::fprintf(stderr,"%f\n",NetIntraDayOptionValue);
-   std::cout<<Initial<<" / "<< "/" <<NetOptionValue <<"/" << NetOrderOptionValue<<". The worst order sequence (" <<
+   std::cout<<Initial<<" / "<< "/" <<NetOptionValue <<"/NOOV:" << NetOrderOptionValue<<".  The worst order sequence (" <<
    (unsigned)strlen(Carry) <<   ": "<<Carry<< std::endl;
   Rcpp::Rcout<< ") Total balance requirement: "<<Initial - NetOptionValue-NetIntraDayOptionValue-NetOrderOptionValue<< " -TRY"<<std::endl; 
 

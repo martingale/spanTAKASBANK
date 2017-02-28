@@ -58,7 +58,7 @@ for(i in c(1:nrow(df))){
           oExPrice = df$OExPrice[i],
           isOrder = as.logical(df$IsOrder[i]),
           isIntraDay = as.logical(df$IsIntraday[i]),
-          EffectPremium = F)
+          EffectPremium = T)
   
   
 }
