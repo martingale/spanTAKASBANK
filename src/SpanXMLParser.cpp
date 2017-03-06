@@ -323,6 +323,8 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 				pOop->ID = ID;
 				pOop->IsCall = isCall;
 				pOop->Maturity = pe.substr(0,6);
+				if(pe.length()>8)
+				  pOop->Maturity += pe.substr(pe.length()-1,1);
 				pOop->MaturityDay = pe;
 				pOop->Name = Name;
 				pOop->Strike = Strike;
@@ -456,12 +458,14 @@ int FillFutures(TiXmlDocument* XMLDOC,map<pair<string,string>, Futures*>& Future
 				Futures* pFut = new Futures();
 				pFut->ID = ID;
 				pFut->Maturity = pe.substr(0,6);
+				if(pe.length()>8)
+				  pFut->Maturity += pe.substr(pe.length()-1,1);
 				pFut->MaturityDay = pe;
 				pFut->Code = Code;
 				pFut->Name = Name;
 				pFut->UnderlyingID = UnderlyingID;
 				pFut->cvf = cvf;
-				//pFut->TimetoMaturity = t;		// t yok!!!!!!!!!!!!!!!!! YEN� SPAN!!!!!!!!!!!!!!!!!!!!!!
+				//pFut->TimetoMaturity = t;		// t yok!!!!!!!!!!!!!!!!! YENI SPAN!!!!!!!!!!!!!!!!!!!!!!
 				pFut->PriceScan = priceScan;
 				pFut->VolScan = volScan;
 				while (a != NULL)
@@ -822,8 +826,8 @@ int Parse(TiXmlDocument* XMLDOC, XMLParser * Parser)
 	FillFutures(XMLDOC, Parser->FuturesContracts, Parser->CurrencyConversions);
 	FillCombinedCommodities(XMLDOC, Parser, Parser->CCs, Parser->CurrencyConversions);
 	FillInterSpreads(XMLDOC, Parser->InterSpreads);
-	//Parser->PrintOptions();
-	//Parser->PrintFutures();
+	Parser->PrintOptions();
+	Parser->PrintFutures();
 	//PrintCombinedCommodities();
 	//getchar();*/
 	return 0;

@@ -740,21 +740,21 @@ HRESULT MarginCalculator::CalculateCCIntraSpread(CCLink* CC, double &Result)
 		
 	// }
 	
-	for(map<int, LegContainer*>::iterator iter = CC->Tiers.begin();iter != CC->Tiers.end();iter++)
-	{
-		pair<int, LegContainer*> temp = *iter;
-		LegContainer* tier = temp.second;
-		
-		if ((CC->CC->FindTier(tier->tn))->StartDate == "")
-		{
-			NetDelta += tier->Longs - tier->Shorts;
-		}
-	}
-
-	 CC->NetDelta = NetDelta;
+	// for(map<int, LegContainer*>::iterator iter = CC->Tiers.begin();iter != CC->Tiers.end();iter++)
+	// {
+	// 	pair<int, LegContainer*> temp = *iter;
+	// 	LegContainer* tier = temp.second;
+	// 	
+	// 	if ((CC->CC->FindTier(tier->tn))->StartDate == "")
+	// 	{
+	// 		NetDelta += tier->Longs - tier->Shorts;
+	// 	}
+	// }
+	// 
+	//  CC->NetDelta = NetDelta;
 	double PriceRisk = CC->VAR - CC->TimeRisk;
 	double FPR = max(0.0,PriceRisk);
-	if (NetDelta == 0)
+	if (CC->NetDelta == 0)
 	{
 		CC->WFPR = 0;
 	}
@@ -2051,8 +2051,8 @@ HRESULT MarginCalculator::UpdateCCLinkModifiedContinued(CCLink* CC)
 	{
 		pair<int, Tier*> temp = *iter;
 		Tier* tier = temp.second;
-		string start = tier->StartDate;
-		string end = tier->EndDate;
+		string start = tier->StartDate.substr(0,6);
+		string end = tier->EndDate.substr(0,6);
 
 		map<string,double>::iterator it;
 		for(it = CC->MonthDeltas.begin(); it != CC->MonthDeltas.end(); it++) {
