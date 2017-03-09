@@ -308,48 +308,57 @@ int FillOptionsON(string what,TiXmlDocument* XMLDOC,map<OptionKey, Option*>& Opt
 				bool isCall = (C == "C");
 				double Strike = atof(opt->FirstChildElement("k")->FirstChild()->Value());
 				double Price = atof(opt->FirstChildElement("p")->FirstChild()->Value());
-				Price = Price * factor;				// D�V�Z!!!!!!! 03.02.2017
-				TiXmlElement* a = opt->FirstChild("ra")->FirstChild("a")->ToElement();
-				int aIndex = 0;
-				Option* pOop = new Option();
+				Price = Price * factor;				// DOVIZ!!!!!!! 03.02.2017
+				TiXmlNode* raNode = opt->FirstChild("ra");
+				if(raNode != NULL)		// SENARYOLAR BOS GELMEYECEK!!!!!!! 8.3.2017
 				
-				pOop->Code = Code;
-				if (EXERC == "AMER")
-				{
-					pOop->EType = AMERICAN;
-				}
-				else 
-					pOop->EType = EUROPIAN;
-				pOop->ID = ID;
-				pOop->IsCall = isCall;
-				pOop->Maturity = pe.substr(0,6);
-				if(pe.length()>8)
-				  pOop->Maturity += pe.substr(pe.length()-1,1);
-				pOop->MaturityDay = pe;
-				pOop->Name = Name;
-				pOop->Strike = Strike;
-				pOop->UnderlyingID = UnderlyingID;
-				pOop->cvf = cvfR;
-				pOop->Price = Price;
-				pOop->PriceRT = Price;
-				pOop->Currency = strcurrency;
-				pOop->PriceScan = priceScan;
-				pOop->VolScan = volScan;
-				pOop->TimetoMaturity = t;
-				while (a != NULL)
 				{
 					//pOop->ra[aIndex] = atof(a->FirstChild()->Value());				D�V�Z!!!!!!!! 03.02.2017
-					pOop->ra[aIndex] = atof(a->FirstChild()->Value())*factor;
-					pOop->raRT[aIndex] = pOop->ra[aIndex];
-					aIndex ++;
-					a = a->NextSiblingElement();
+			
+			TiXmlElement* a = opt->FirstChild("ra")->FirstChild("a")->ToElement();
+				  int aIndex = 0;
+				  Option* pOop = new Option();
+				  
+				  pOop->Code = Code;
+				  if (EXERC == "AMER")
+				  {
+				    pOop->EType = AMERICAN;
+				  }
+				  else 
+				    pOop->EType = EUROPIAN;
+				  pOop->ID = ID;
+				  pOop->IsCall = isCall;
+				  pOop->Maturity = pe.substr(0,6);
+				  if(pe.length()>8)
+				    pOop->Maturity += pe.substr(pe.length()-1,1);
+				  pOop->MaturityDay = pe;
+				  pOop->Name = Name;
+				  pOop->Strike = Strike;
+				  pOop->UnderlyingID = UnderlyingID;
+				  pOop->cvf = cvfR;
+				  pOop->Price = Price;
+				  pOop->PriceRT = Price;
+				  pOop->Currency = strcurrency;
+				  pOop->PriceScan = priceScan;
+				  pOop->VolScan = volScan;
+				  pOop->TimetoMaturity = t;
+				  while (a != NULL)
+				  {
+				    //pOop->ra[aIndex] = atof(a->FirstChild()->Value());				DVZ!!!!!!!! 03.02.2017
+				    pOop->ra[aIndex] = atof(a->FirstChild()->Value())*factor;
+				    pOop->raRT[aIndex] = pOop->ra[aIndex];
+				    aIndex ++;
+				    a = a->NextSiblingElement();
+				  }
+				  
+				  pOop->delta = atof(opt->FirstChild("ra")->FirstChild("d")->ToElement()->FirstChild()->Value());
+				  pOop->deltaRT = pOop->delta;
+				  
+				  //OptionContracts.insert(std::make_pair(OptionKey(Code, pe,isCall,pOop->EType,Strike), pOop)); Maturity Day Update!!!!!!
+				  
+				  OptionContracts.insert(std::make_pair(OptionKey(Code, pOop->Maturity,isCall,pOop->EType,Strike), pOop));
 				}
 
-				pOop->delta = atof(opt->FirstChild("ra")->FirstChild("d")->ToElement()->FirstChild()->Value());
-				pOop->deltaRT = pOop->delta;
-
-				//OptionContracts.insert(std::make_pair(OptionKey(Code, pe,isCall,pOop->EType,Strike), pOop)); Maturity Day Update!!!!!!
-				OptionContracts.insert(std::make_pair(OptionKey(Code, pOop->Maturity,isCall,pOop->EType,Strike), pOop));
 
 				//OptionContracts.push_back(pOop);
 
