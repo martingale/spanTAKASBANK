@@ -725,8 +725,8 @@ HRESULT MarginCalculator::CalculateCCIntraSpread(CCLink* CC, double &Result)
 	for (size_t i = 0; i < pccDef->dSpreads.size(); i++ )
 	{
 		hr = CalculateCCIntraSpreadforDSpread(CC,pccDef->dSpreads[i],SubTotal);
-		if (hr == S_FALSE)
-			break;
+		// if (hr == S_FALSE)
+		// 	break;
 		Result += SubTotal;
 	}
 
