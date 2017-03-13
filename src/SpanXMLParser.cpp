@@ -620,7 +620,7 @@ int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<Co
 		{
 			DSpread* pdSpread = new DSpread();
 			pdSpread->Priority = atoi(dSpread->FirstChildElement("spread")->FirstChild()->Value());
-			pdSpread->Rate = factor*atof(dSpread->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
+			pdSpread->Rate = atof(dSpread->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
 			TiXmlElement* tLeg = dSpread->FirstChildElement("tLeg");
 			TiXmlElement* pLeg = dSpread->FirstChildElement("pLeg");
 			while (tLeg != NULL)
