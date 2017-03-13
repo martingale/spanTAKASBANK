@@ -609,7 +609,7 @@ int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<Co
 			{
 				SOMTier* pTier = new SOMTier();
 				pTier->tn = atoi(tier->FirstChildElement("tn")->FirstChild()->Value());
-				pTier->rate = atof(tier->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
+				pTier->rate = factor * atof(tier->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
 				pCC->SOMTiers.push_back(pTier);
 			}
 			tier = tier->NextSiblingElement("tier");
@@ -620,7 +620,7 @@ int FillCombinedCommodities(TiXmlDocument* XMLDOC, XMLParser * Parser, vector<Co
 		{
 			DSpread* pdSpread = new DSpread();
 			pdSpread->Priority = atoi(dSpread->FirstChildElement("spread")->FirstChild()->Value());
-			pdSpread->Rate = atof(dSpread->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
+			pdSpread->Rate = factor * atof(dSpread->FirstChildElement("rate")->FirstChildElement("val")->FirstChild()->Value());
 			TiXmlElement* tLeg = dSpread->FirstChildElement("tLeg");
 			TiXmlElement* pLeg = dSpread->FirstChildElement("pLeg");
 			while (tLeg != NULL)

@@ -721,10 +721,11 @@ HRESULT MarginCalculator::CalculateCCIntraSpread(CCLink* CC, double &Result)
 	
 	CombinedCommodity* pccDef = CC->CC; 
 	HRESULT hr;
-	double SubTotal = 0;
+	
 	for (size_t i = 0; i < pccDef->dSpreads.size(); i++ )
 	{
-		hr = CalculateCCIntraSpreadforDSpread(CC,pccDef->dSpreads[i],SubTotal);
+        double SubTotal = 0;
+        hr = CalculateCCIntraSpreadforDSpread(CC,pccDef->dSpreads[i],SubTotal);
 		// if (hr == S_FALSE)
 		// 	break;
 		Result += SubTotal;
